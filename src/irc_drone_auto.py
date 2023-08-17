@@ -1,3 +1,7 @@
+###################################################################################
+#### This file requires the mission to have a return to launch/landing waypoint ###
+###################################################################################
+
 from   dronekit           import connect, VehicleMode, LocationGlobalRelative, APIException
 from   picamera2          import Picamera2
 from   picamera2.encoders import H264Encoder, Quality
@@ -13,29 +17,19 @@ import irc.client
 import irc.bot
 import threading
 
-###################################################################################
-# This file requires the mission to have a return to launch/landing waypoint
-###################################################################################
-
 """
-    @brief: IRCBot inherits from the irc.client.SimpleIRCClient class. It represents a
-                basic template for creating an IRC bot, which connects to an IRC server
-                and a specified channel. Both UAVBot and UGVHitListener inherit from
-                this class
+    IRCBot inherits from the irc.client.SimpleIRCClient class. It represents a
+        basic template for creating an IRC bot, which connects to an IRC server
+        and a specified channel. Both UAVBot and UGVHitListener inherit from
+        this class
 """
 class IRCBot(irc.client.SimpleIRCClient):
     def __init__(self, bot_name, server, channel):
         # Initialize the bot by connecting to the IRC server and joining the channel
         irc.client.SimpleIRCClient.__init__(self)
-
-        # Set the server and channel information
-        self.server  = server
-        self.channel = channel
-
-        # Set the bot's initial connection status to False
+        self.server    = server
+        self.channel   = channel
         self.connected = False
-
-        # Connect the bot to the server and join the channel
         self.connect(self.server, 6667, bot_name)
         self.connection.join(self.channel)
 
@@ -54,9 +48,9 @@ class IRCBot(irc.client.SimpleIRCClient):
             self.connected = False
 
 """
-    @brief: UAVBot is an IRC bot that joins the IRC server and sends messages
-                when the drone fires its laser. The message contains all the
-                content required by Raytheon
+    UAVBot is an IRC bot that joins the IRC server and sends messages
+        when the drone fires its laser. The message contains all the
+        content required by Raytheon
 """
 class UAVBot(IRCBot):
     def __init__(self):
@@ -65,9 +59,7 @@ class UAVBot(IRCBot):
 
     # Send fire message to channel
     def send_fire_message(self, team_name, aruco_id, time_of_laser, location):
-        # Raytheon says only send a message per second?
-        time.sleep(1)
-        # Format the message with the given information
+        time.sleep(1) # Raytheon says only send a message per second
         time_of_fire = time_of_laser.strftime("%m-%d-%Y %I:%M:%S")
         message      = f"RTXDC_2023 {team_name}_UAV_Fire_{aruco_id}_{time_of_fire}_{location}"
 
@@ -76,10 +68,10 @@ class UAVBot(IRCBot):
 
 
 """
-    @brief: UGVHitListener is an IRC bot that joins the IRC server and listens
-                for messages in the server chat that contain _UGV_Hit_. If it
-                finds a message, it then takes it and gets the ArUco ID of the
-                vehicle that said it was hit
+    UGVHitListener is an IRC bot that joins the IRC server and listens
+        for messages in the server chat that contain _UGV_Hit_. If it
+        finds a message, it then takes it and gets the ArUco ID of the
+        vehicle that said it was hit
 """
 class UGVHitListener(IRCBot):
     def __init__(self):
@@ -131,11 +123,9 @@ console_handler.setLevel(logging.WARNING)
 logging.getLogger().addHandler(console_handler)
 logging.getLogger().setLevel(logging.WARNING)
 
-#cv2.startWindowThread()
 picam2 = Picamera2()
 picam2.configure(picam2.create_preview_configuration(main = {"format": 'XRGB8888', "size": (640, 480)}))
 picam2.start()
-#picam2.start_and_record_video("flight recording " + str(time.strftime("%m-%d-%y  %I:%M:%S %p",time.localtime())) + ".mp4")
 
 # Create a function to run the IRC bot in a separate thread
 def run_bot(bot):
